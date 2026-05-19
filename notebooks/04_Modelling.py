@@ -2,19 +2,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
+import os
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import recall_score , precision_score , accuracy_score , classification_report , confusion_matrix , f1_score
+from sklearn.metrics import accuracy_score , classification_report , confusion_matrix 
 from xgboost import XGBClassifier
 
 
-df = pd.read_csv(r"C:\Scikit Learn\Stock Market Predictor System\data\master_data_features.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+df = pd.read_csv(os.path.join(BASE_DIR, "..", "data", "master_data_features.csv"))
 df = df.drop(columns=[ "Unnamed: 0" ], errors="ignore")
-X = df.drop(columns=["TARGET"])
-y = df["TARGET"]
-
-print("X shape :" , X.shape)
-print("Y shape :" , y.shape)
-print("Columns in X : " , (X.columns))
 
 
 #Split first using date 
@@ -25,15 +21,9 @@ test_df = df [df["Date"] >= "2022-01-01"]
 train_df = train_df.drop(columns=["Date"])
 test_df = test_df.drop(columns=["Date"])
 
-#Create x and y 
-X_train = train_df.drop(columns=["TARGET"])
-X_test = test_df.drop(columns=["TARGET"])
-
 y_train = train_df["TARGET"]
 y_test = test_df["TARGET"]
 
-print("X_train shape:", X_train.shape)
-print("X_test shape:", X_test.shape)
 print("y_train:", y_train.value_counts())
 print("y_test:", y_test.value_counts())
 
@@ -68,8 +58,6 @@ print(len(importances))    # should be 9
 print("Accuracy:", accuracy_score(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
-feature_names = X_train.columns
-importances = model_rf.feature_importances_
 
 feat_df = pd.DataFrame({
     "Feature": feature_names,
@@ -79,7 +67,7 @@ feat_df = pd.DataFrame({
 plt.figure(figsize=(10, 6))
 plt.barh(feat_df["Feature"], feat_df["Importance"])
 plt.title("Feature Importance — Random Forest")
-plt.savefig("feature_importance.png")
+plt.savefig(os.path.join(BASE_DIR, "..", "feature_importance.png"))
 plt.show()
 
 xgb_model = XGBClassifier(
@@ -95,6 +83,6 @@ print("Accuracy:", accuracy_score(y_test, y_pred_xgb))
 print("\nClassification Report:\n", 
       classification_report(y_test, y_pred_xgb))
 
+joblib.dump(model_rf, os.path.join(BASE_DIR, "..", "models", "rf_model.pkl"))
 
-joblib.dump(model_rf, r"C:\Scikit Learn\Stock Market Predictor System\models\rf_model.pkl")
 print("Model saved successfully.")
