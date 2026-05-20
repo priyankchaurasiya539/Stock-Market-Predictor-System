@@ -138,6 +138,11 @@ elif page == "Predict":
             "NIFTY_MA_50", "NIFTY_MA_200", "RSI",
             "VIX_lag1", "VIX_lag7", "CRUDE_lag7"]
 
+            if df.empty or len(df) < 10:
+                st.error("Not enough data fetched. Please try again later.")
+                st.stop()
+
+            st.write(f"Data fetched: {len(df)} rows")
             latest = df[features].iloc[[-1]]
 
             model = joblib.load("models/rf_model.pkl")
